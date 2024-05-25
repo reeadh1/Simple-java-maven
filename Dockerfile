@@ -1,12 +1,32 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
-WORKDIR /app
-COPY pom.xml /app
+# Use an official Maven runtime as a parent image
+FROM maven:3.8.2-openjdk-11-slim AS build
 
-COPY src /app/src
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the pom.xml file
+COPY pom.xml .
+
+# Download all dependencies (Maven will download them)
+RUN mvn dependency:go-offline -B
+
+# Copy the rest of the application code
+COPY src ./src
+
+# Build the application
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+# Use an official OpenJDK 11 runtime as a parent image
+FROM openjdk:11-jre-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the jar file from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port 8080 to the outside world
 EXPOSE 8080
-VOLUME /tmp
-COPY --from=builder /app/target/*.jar myapp.jar
-ENTRYPOINT ["java","-jar","myapp.jar"]
+
+# Run the application
+CMD ["java", "-jar", "app.jar"]
