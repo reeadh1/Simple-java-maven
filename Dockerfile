@@ -1,11 +1,11 @@
-# Use an official Maven runtime as a parent image dsfs
+# Use an official Maven runtime as a parent image 
 FROM maven:3.8.2-openjdk-11-slim AS build
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy the pom.xml file
-COPY pom.xml .
+COPY pom.xml . 
 
 # Download all dependencies (Maven will download them)
 RUN mvn dependency:go-offline -B
